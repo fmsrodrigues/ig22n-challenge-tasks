@@ -1,4 +1,5 @@
 import fs from "node:fs/promises";
+import { randomUUID } from 'node:crypto';
 
 const databasePath = new URL('../db.json', import.meta.url);
 
@@ -19,6 +20,14 @@ export class Database {
     fs.writeFile(databasePath, JSON.stringify(this.#database))
   }
 
+  getById(table, id) {
+    const rowIndex = this.#database[table].findIndex(row => row.id === id);
+
+    if(rowIndex !== -1) {
+      return this.#database[table][rowIndex];
+    }
+  }
+
   select(table, search) {
     let data = this.#database[table] ?? [];
 
@@ -34,10 +43,17 @@ export class Database {
   }
 
   insert(table, data) {
+    const sanitizedData = { 
+      ...data,
+      id: randomUUID(),
+      created_at: new Date().toISOString(), 
+      updated_at: new Date().toISOString(),
+    };
+
     if(Array.isArray(this.#database[table])) {
-      this.#database[table].push(data);
+      this.#database[table].push(sanitizedData);
     } else {
-      this.#database[table] = [data]
+      this.#database[table] = [sanitizedData]
     }
   
     this.#persist();
@@ -49,7 +65,16 @@ export class Database {
     const rowIndex = this.#database[table].findIndex(row => row.id === id);
 
     if(rowIndex !== -1) {
-      this.#database[table][rowIndex] = { ...data, id };
+      const item = this.#database[table][rowIndex];
+
+      const sanitizedData =  {
+        ...item,
+        ...data,
+        updated_at: new Date().toISOString(), 
+        id
+      }
+
+      this.#database[table][rowIndex] = sanitizedData;
       this.#persist();
     }
   }
