@@ -37,6 +37,9 @@ export const routes = [
     path: buildRoutePath('/tasks'),
     async handler(req, res) {
       const { title, description } = req.body;
+      if(!title || !description) {
+        return res.writeHead(400).end(JSON.stringify({ message: "You must provide a title and a description to create a task" }))
+      }
 
       const task = {
         title,
@@ -56,6 +59,9 @@ export const routes = [
       const { id } = req.params;
 
       const task = database.getById('tasks', id);
+      if(!task) {
+        return res.writeHead(400).end(JSON.stringify({ message: "Task id not found" }))
+      }
 
       if(task) {
         database.update('tasks', id, {
@@ -74,14 +80,19 @@ export const routes = [
       const { id } = req.params;
       const { title, description } = req.body;
 
-      const task = database.getById('tasks', id);
-
-      if(task) {
-        database.update('tasks', id, {
-          title: title ?? task.title,
-          description: description ?? task.description
-        });
+      if(!title && !description) {
+        return res.writeHead(400).end(JSON.stringify({ message: "You must provide a new title and/or a new description to update a task" }))
       }
+
+      const task = database.getById('tasks', id);
+      if(!task) {
+        return res.writeHead(400).end(JSON.stringify({ message: "Task id not found" }))
+      }
+
+      database.update('tasks', id, {
+        title: title ?? task.title,
+        description: description ?? task.description
+      });
 
       return res.writeHead(204).end()
     }
@@ -91,6 +102,11 @@ export const routes = [
     path: buildRoutePath('/tasks/:id'),
     async handler(req, res) {
       const { id } = req.params;
+
+      const task = database.getById('tasks', id);
+      if(!task) {
+        return res.writeHead(400).end(JSON.stringify({ message: "Task id not found" }))
+      }
 
       database.delete('tasks', id);
 
