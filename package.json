@@ -5,10 +5,14 @@
   "type": "module",
   "main": "index.js",
   "scripts": {
+    "import:csv": "node ./streams/import-csv.js",
     "dev": "node --watch ./src/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
-  "license": "ISC"
+  "license": "ISC",
+  "dependencies": {
+    "csv": "^6.2.5"
+  }
 }
